@@ -68,7 +68,7 @@ typedef struct dictType {
     unsigned int keys_are_odd:1;
     /* TODO: Add a 'keys_are_even' flag and use a similar optimization if that
      * flag is set. */
-
+    
     /* Allow each dict and dictEntry to carry extra caller-defined metadata. The
      * extra memory is initialized to 0 when allocated. */
     size_t (*dictEntryMetadataBytes)(dict *d);
@@ -76,6 +76,7 @@ typedef struct dictType {
     /* Optional callback called after an entry has been reallocated (due to
      * active defrag). Only called if the entry has metadata. */
     void (*afterReplaceEntry)(dict *d, dictEntry *entry);
+    unsigned long (*initialHTSize)(void);
 } dictType;
 
 #define DICTHT_SIZE(exp) ((exp) == -1 ? 0 : (unsigned long)1<<(exp))

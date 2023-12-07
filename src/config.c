@@ -2452,6 +2452,19 @@ static int updateHZ(const char **err) {
     return 1;
 }
 
+static int updateHTInitialSizeExp(const char **err) {
+    UNUSED(err);
+    /* initial size exponential cannot less 2 and greater than 32, initializing dict hash tables 
+     * with 2<<32 buckets to start with, may not be a good idea. */
+    if (server.dictHtInitialSize < HASHTABLE_INITIAL_SIZE_EXP_MIN || server.dictHtInitialSize > HASHTABLE_INITIAL_SIZE_EXP_MAX)  {
+        *err = "failed to set dict-ht-initial-size, value must be with in [2,32]";
+        return 0;
+    }
+
+
+    return 1;
+}
+
 static int updatePort(const char **err) {
     connListener *listener = listenerByType(CONN_TYPE_SOCKET);
 
@@ -3188,6 +3201,7 @@ standardConfig static_configs[] = {
     createUIntConfig("maxclients", NULL, MODIFIABLE_CONFIG, 1, UINT_MAX, server.maxclients, 10000, INTEGER_CONFIG, NULL, updateMaxclients),
     createUIntConfig("unixsocketperm", NULL, IMMUTABLE_CONFIG, 0, 0777, server.unixsocketperm, 0, OCTAL_CONFIG, NULL, NULL),
     createUIntConfig("socket-mark-id", NULL, IMMUTABLE_CONFIG, 0, UINT_MAX, server.socket_mark_id, 0, INTEGER_CONFIG, NULL, NULL),
+    createUIntConfig("dict-ht-initial-size", NULL, MODIFIABLE_CONFIG, 2, 32, server.dictHtInitialSize, 2, INTEGER_CONFIG, NULL, updateHTInitialSizeExp),
 #ifdef LOG_REQ_RES
     createUIntConfig("client-default-resp", NULL, IMMUTABLE_CONFIG | HIDDEN_CONFIG, 2, 3, server.client_default_resp, 2, INTEGER_CONFIG, NULL, NULL),
 #endif

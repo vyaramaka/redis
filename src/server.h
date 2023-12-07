@@ -194,12 +194,13 @@ struct hdr_histogram;
 #define CONFIG_OOM_REPLICA 1
 #define CONFIG_OOM_BGCHILD 2
 #define CONFIG_OOM_COUNT 3
-
 extern int configOOMScoreAdjValuesDefaults[CONFIG_OOM_COUNT];
 
 /* Hash table parameters */
 #define HASHTABLE_MIN_FILL        10      /* Minimal hash table fill 10% */
 #define HASHTABLE_MAX_LOAD_FACTOR 1.618   /* Maximum hash table load factor. */
+#define HASHTABLE_INITIAL_SIZE_EXP_MIN 2
+#define HASHTABLE_INITIAL_SIZE_EXP_MAX 32
 
 /* Command flags. Please check the definition of struct redisCommand in this file
  * for more information about the meaning of every flag. */
@@ -1604,6 +1605,8 @@ struct redisServer {
     char *req_res_logfile; /* Path of log file for logging all requests and their replies. If NULL, no logging will be performed */
     unsigned int client_default_resp;
 #endif
+
+    unsigned int dictHtInitialSize; /* TODO: Add comments */
 
     /* Stuff for client mem eviction */
     clientMemUsageBucket* client_mem_usage_buckets;

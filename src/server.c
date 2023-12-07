@@ -414,6 +414,10 @@ void dbDictAfterReplaceEntry(dict *d, dictEntry *de) {
     if (server.cluster_enabled) slotToKeyReplaceEntry(d, de);
 }
 
+unsigned long dbInitialHTSize(void) {
+    return 1 << server.dictHtInitialSize;
+}
+
 /* Generic hash table type where keys are Redis Objects, Values
  * dummy pointers. */
 dictType objectKeyPointerValueDictType = {
@@ -471,7 +475,8 @@ dictType dbDictType = {
     dictExpandAllowed,          /* allow to expand */
     .dictEntryMetadataBytes = dbDictEntryMetadataSize,
     .dictMetadataBytes = dbDictMetadataSize,
-    .afterReplaceEntry = dbDictAfterReplaceEntry
+    .afterReplaceEntry = dbDictAfterReplaceEntry,
+    .initialHTSize  = dbInitialHTSize
 };
 
 /* Db->expires */
@@ -482,7 +487,8 @@ dictType dbExpiresDictType = {
     dictSdsKeyCompare,          /* key compare */
     NULL,                       /* key destructor */
     NULL,                       /* val destructor */
-    dictExpandAllowed           /* allow to expand */
+    dictExpandAllowed,           /* allow to expand */
+    .initialHTSize  = dbInitialHTSize
 };
 
 /* Command table. sds string -> command struct pointer. */

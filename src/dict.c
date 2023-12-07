@@ -172,6 +172,9 @@ static inline int entryHasValue(const dictEntry *de) {
 }
 
 /* ----------------------------- API implementation ------------------------- */
+unsigned long defaultDbInitialHTSize(void) {
+    return 1 << 2;
+}
 
 /* Reset hash table parameters already initialized with _dictInit()*/
 static void _dictReset(dict *d, int htidx)
@@ -202,6 +205,11 @@ int _dictInit(dict *d, dictType *type)
     d->type = type;
     d->rehashidx = -1;
     d->pauserehash = 0;
+
+    if (!type->initialHTSize) {
+        type->initialHTSize = defaultDbInitialHTSize;
+    }
+
     return DICT_OK;
 }
 
@@ -212,9 +220,12 @@ int dictResize(dict *d)
     unsigned long minimal;
 
     if (dict_can_resize != DICT_RESIZE_ENABLE || dictIsRehashing(d)) return DICT_ERR;
+ 
+    unsigned long initialSize = d->type->initialHTSize();
+
     minimal = d->ht_used[0];
-    if (minimal < DICT_HT_INITIAL_SIZE)
-        minimal = DICT_HT_INITIAL_SIZE;
+    if (minimal < initialSize)
+        minimal = initialSize;
     return dictExpand(d, minimal);
 }
 
@@ -1408,7 +1419,7 @@ static int _dictExpandIfNeeded(dict *d)
     if (dictIsRehashing(d)) return DICT_OK;
 
     /* If the hash table is empty expand it to the initial size. */
-    if (DICTHT_SIZE(d->ht_size_exp[0]) == 0) return dictExpand(d, DICT_HT_INITIAL_SIZE);
+    if (DICTHT_SIZE(d->ht_size_exp[0]) == 0) return dictExpand(d, d->type->initialHTSize());
 
     /* If we reached the 1:1 ratio, and we are allowed to resize the hash
      * table (global setting) or we should avoid it but the ratio between
